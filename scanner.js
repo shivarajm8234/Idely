@@ -80,7 +80,7 @@ const SECRET_PATTERNS = {
 
   GENERIC_CREDENTIAL_ASSIGNMENT: {
     name: "Hardcoded Credential Assignment",
-    regex: /\b(api[-_]?key|apikey|api[-_]?secret|app[-_]?secret|auth[-_]?token|authtoken|access[-_]?token|accesstoken|secret[-_]?key|secretkey|client[-_]?secret|clientsecret|private[-_]?key|privatekey|password|passwd|pass|db[-_]?pass|db[-_]?password|smtp[-_]?pass|mysql[-_]?pass|bearer[-_]?token|oauth[-_]?token|refresh[-_]?token|id[-_]?token|session[-_]?token|x[-_]?api[-_]?key|AUTHORIZATION|x[-_]?auth[-_]?token|encryption[-_]?key|encryption[-_]?secret|signing[-_]?key|signing[-_]?secret|webhook[-_]?secret|stripe[-_]?key|firebase[-_]?key|twilio[-_]?token|sendgrid[-_]?key|mailgun[-_]?key|sentry[-_]?dsn|algolia[-_]?key|mapbox[-_]?token|cloudinary[-_]?secret|pusher[-_]?key)\s*[:=]\s*['"`]([A-Za-z0-9_\-!@#$%.^&*()+=:/]{8,256})['"`]/gi,
+    regex: /\b(admin[-_]?password|user[-_]?password|admin[-_]?pass|user[-_]?pass|admin[-_]?pwd|user[-_]?pwd|api[-_]?key|apikey|api[-_]?secret|app[-_]?secret|auth[-_]?token|authtoken|access[-_]?token|accesstoken|secret[-_]?key|secretkey|client[-_]?secret|clientsecret|private[-_]?key|privatekey|password|passwd|pwd|pass|db[-_]?pass|db[-_]?password|smtp[-_]?pass|mysql[-_]?pass|bearer[-_]?token|oauth[-_]?token|refresh[-_]?token|id[-_]?token|session[-_]?token|x[-_]?api[-_]?key|AUTHORIZATION|x[-_]?auth[-_]?token|encryption[-_]?key|encryption[-_]?secret|signing[-_]?key|signing[-_]?secret|webhook[-_]?secret|stripe[-_]?key|firebase[-_]?key|twilio[-_]?token|sendgrid[-_]?key|mailgun[-_]?key|sentry[-_]?dsn|algolia[-_]?key|mapbox[-_]?token|cloudinary[-_]?secret|pusher[-_]?key)\s*[:=]\s*['"`]([A-Za-z0-9_\-!@#$%.^&*()+=:/]{5,256})['"`]/gi,
     severity: "HIGH",
     category: "Credentials"
   },
