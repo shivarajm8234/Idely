@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Idely Security Testing Sandbox</title>
+  <style>
+    body {
+      background: #0f1015;
+      color: #e2e8f0;
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 40px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #7c4dff;
+      border-bottom: 1px solid #2d3748;
+      padding-bottom: 12px;
+      margin-bottom: 24px;
+    }
+    .panel {
+      background: #1a1c23;
+      border: 1px solid #2d3748;
+      padding: 24px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    h3 {
+      margin-top: 0;
+      color: #ffffff;
+    }
+    p {
+      color: #a0aec0;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .btn {
+      background: #7c4dff;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+    .btn:hover {
+      background: #6c3bee;
+    }
+    .btn-secondary {
+      background: #4a5568;
+    }
+    .btn-secondary:hover {
+      background: #3a4454;
+    }
+    .flex-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 15px;
+    }
+    pre {
+      background: #000;
+      padding: 12px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      color: #a3e635;
+      overflow-x: auto;
+    }
+
+    /* Virtual Cursor & Lock Overlay Styling */
+    #virtual-cursor {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      background: radial-gradient(circle, rgba(124, 77, 255, 1) 0%, rgba(124, 77, 255, 0.4) 60%, transparent 100%);
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 10000;
+      transition: all 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+      box-shadow: 0 0 15px #7c4dff, inset 0 0 8px #7c4dff;
+      transform: translate(-50%, -50%);
+      display: none;
+    }
+    #virtual-cursor.clicking {
+      transform: translate(-50%, -50%) scale(0.6);
+      background: #00e676;
+      box-shadow: 0 0 25px #00e676;
+    }
+    .ripple {
+      position: absolute;
+      border: 2px solid #00e676;
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      animation: ripple-effect 0.6s ease-out;
+      z-index: 9999;
+    }
+    @keyframes ripple-effect {
+      0% { width: 0; height: 0; opacity: 1; }
+      100% { width: 80px; height: 80px; opacity: 0; }
+    }
+    #lock-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(10, 11, 15, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 9998;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+    }
+    .lock-banner {
+      background: #16171e;
+      border: 1px solid rgba(124, 77, 255, 0.3);
+      padding: 24px 48px;
+      border-radius: 8px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+      text-align: center;
+    }
+    .pulse-text {
+      animation: pulse-glow 1.5s infinite alternate;
+      font-size: 14px;
+      font-weight: 700;
+      color: #7c4dff;
+      letter-spacing: 1px;
+      margin-top: 12px;
+    }
+    @keyframes pulse-glow {
+      0% { opacity: 0.5; text-shadow: 0 0 5px rgba(124,77,255,0.5); }
+      100% { opacity: 1; text-shadow: 0 0 15px rgba(124,77,255,1); }
+    }
+    .scan-highlight {
+      box-shadow: 0 0 25px rgba(124, 77, 255, 0.8) !important;
+      border-color: #7c4dff !important;
+      transition: box-shadow 0.3s, border-color 0.3s;
+    }
+  </style>
+</head>
+<body>
+  <!-- Lock Overlay -->
+  <div id="lock-overlay">
+    <div class="lock-banner">
+      <h2 style="margin:0; font-size: 20px;">Idely Agent Autopilot Active</h2>
+      <p style="margin: 8px 0 0 0; color: #a0aec0; font-size:12px;">Auditing page code, storage context, and network bindings.</p>
+      <div class="pulse-text">DO NOT INTERFERE — CONTROLLING CURSOR</div>
+    </div>
+  </div>
+
+  <!-- Virtual Cursor -->
+  <div id="virtual-cursor"></div>
+
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid #2d3748; padding-bottom: 12px;">
+    <h1 style="margin: 0; border: none; padding: 0;">Idely Scanning Sandbox</h1>
+    <button class="btn" id="start-autopilot" style="background: linear-gradient(135deg, #7c4dff 0%, #ff1744 100%);">Run Agent Autopilot Audit</button>
+  </div>
+  <p>Use this page to verify that the Idely chrome extension successfully intercepts network requests, DOM structures, and global states.</p>
+
+  <!-- 1. Inline Code Exposure -->
+  <div class="panel" id="panel-inline">
+    <h3>1. Hardcoded Inline Script Secrets</h3>
+    <p>This script tag in the page source defines mock AWS credentials and a database password.</p>
+    <pre>
+&lt;script&gt;
+  const aws_key_id = "AKIAJHETRD6287FUDHSQ";
+  const aws_secret_key = "Ksd8Ksd8Ksd8Ksd8Ksd8Ksd8Ksd8Ksd8Ksd8Ksd8";
+  const db_password = "superSecretPassword123!";
+&lt;/script&gt;</pre>
+  </div>
+
+  <!-- 2. Dynamic Fetch Interception -->
+  <div class="panel" id="panel-network">
+    <h3>2. Fetch & XHR Interception</h3>
+    <p>Triggering the buttons below will perform network requests containing a dummy Stripe credential and a Bearer Token in headers.</p>
+    <div class="flex-row">
+      <button class="btn" id="trigger-fetch">Trigger Fetch Request</button>
+      <button class="btn btn-secondary" id="trigger-xhr">Trigger XHR Request</button>
+    </div>
+  </div>
+
+  <!-- 3. LocalStorage / SessionStorage -->
+  <div class="panel" id="panel-storage">
+    <h3>3. Web Storage Secrets</h3>
+    <p>Click below to write a mock GitHub Personal Access Token to local storage.</p>
+    <button class="btn" id="populate-storage">Populate LocalStorage</button>
+  </div>
+
+  <!-- 4. Global Objects -->
+  <div class="panel" id="panel-globals">
+    <h3>4. Window Global Variable Exposure</h3>
+    <p>This page defines a global window config object exposing a Google API key:</p>
+    <pre>window.config = { FIREBASE_API_KEY: "AIzaSyB8K27dHskLskDkdJsk9832HdkslskDkdM" };</pre>
+  </div>
+
+  <!-- Load external mock JS file asset -->
+  <script src="external-mock.js"></script>
+
+  <!-- Script containing diverse credential types for scanner validation -->
+  <script>
+    // ── AWS Credentials ──
+    const aws_key_id = "AKIAJHETRD6287FUDHSQ";
+    const aws_secret_key = "Ksd8Ksd8Ksd8Ksd8Ksd8Ksd8Ksd8Ksd8Ksd8Ksd8";
+
+    // ── Passwords ──
+    const db_password = "superSecretPassword123!";
+    const password = "Str0ng@P@ssW0rd!";
+    const smtp_pass = "Sm7pP@ssw0rdXYZ!";
+
+    // ── API Keys ──
+    const api_key = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2";
+    const apikey = "zxcv1234qwer5678asdf9012zxcv1234qwer5678";
+    const x_api_key = "sk-proj-AbCdEfGhIjKlMnOpQrStUvWxYz12345678901234";
+
+    // ── Auth Tokens ──
+    const auth_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+    const access_token = "ya29.a0ARrdaM8AbCdEfGhIjKlMnOpQrStUvWxYz1234567890ABCDEF";
+    const secret_key = "3b6c8f2a1d4e9c7f0b5e2a8d1c4f7b3e6a9d2c5f";
+
+    // ── OAuth ──
+    const client_secret = "ABCDefGHIJklMNopQRSTuvWXyzabcd1234567890AB";
+
+    // ── Global window config ──
+    window.config = {
+      FIREBASE_API_KEY: "AIzaSyB8K27dHskLskDkdJsk9832HdkslskDkdM"
+    };
+
+    // 2. Fetch Interceptor Test
+    document.getElementById("trigger-fetch").addEventListener("click", () => {
+      // Perform a fetch call to a local path or echo service
+      fetch("/echo-endpoint", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE6MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+        },
+        body: JSON.stringify({
+          stripe_secret: "sk_test_thisIsAMockKeyForTestingPurposes"
+        })
+      }).catch(err => {
+        console.log("Fetch executed (ignored actual network failure for interception test)");
+      });
+    });
+
+    // XMLHttpRequest Test
+    document.getElementById("trigger-xhr").addEventListener("click", () => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "/xhr-mock-endpoint");
+      xhr.setRequestHeader("X-Api-Key", "ghp_Ksd8Ksd8Ksd8Ksd8Ksd8Ksd8Ksd8Ksd8Ksd8");
+      xhr.send(JSON.stringify({ request_type: "ping" }));
+    });
+
+    // 3. Storage Populate
+    document.getElementById("populate-storage").addEventListener("click", () => {
+      localStorage.setItem("IDELY_MOCK_GITHUB_TOKEN", "ghp_Ksd8Ksd8Ksd8Ksd8Ksd8Ksd8Ksd8Ksd8Ksd8");
+      if (!window.autopilotActive) {
+        alert("Mock Token written to LocalStorage! Real-time storage scanner should flag this.");
+      }
+    });
+
+    // Autopilot Simulation Sequence
+    document.getElementById("start-autopilot").addEventListener("click", () => {
+      window.autopilotActive = true;
+      const overlay = document.getElementById("lock-overlay");
+      const cursor = document.getElementById("virtual-cursor");
+      
+      overlay.style.display = "flex";
+      cursor.style.display = "block";
+      
+      // Starting coordinates
+      cursor.style.left = "50px";
+      cursor.style.top = "50px";
+
+      function moveCursorTo(elementOrSelector, callback, clickAfter = false) {
+        const el = typeof elementOrSelector === "string" ? document.querySelector(elementOrSelector) : elementOrSelector;
+        const rect = el.getBoundingClientRect();
+        const destX = rect.left + rect.width / 2 + window.scrollX;
+        const destY = rect.top + rect.height / 2 + window.scrollY;
+
+        cursor.style.left = destX + "px";
+        cursor.style.top = destY + "px";
+
+        setTimeout(() => {
+          if (clickAfter) {
+            cursor.classList.add("clicking");
+            const ripple = document.createElement("div");
+            ripple.className = "ripple";
+            ripple.style.left = destX + "px";
+            ripple.style.top = destY + "px";
+            document.body.appendChild(ripple);
+            
+            setTimeout(() => {
+              ripple.remove();
+              cursor.classList.remove("clicking");
+            }, 600);
+
+            el.click();
+          }
+          if (callback) callback();
+        }, 1000);
+      }
+
+      // Step 1: Scan Inline code block
+      setTimeout(() => {
+        const targetPanel = document.getElementById("panel-inline");
+        moveCursorTo(targetPanel, () => {
+          targetPanel.classList.add("scan-highlight");
+          setTimeout(() => {
+            targetPanel.classList.remove("scan-highlight");
+            
+            // Step 2: Scan window configurations
+            const globalsPanel = document.getElementById("panel-globals");
+            moveCursorTo(globalsPanel, () => {
+              globalsPanel.classList.add("scan-highlight");
+              setTimeout(() => {
+                globalsPanel.classList.remove("scan-highlight");
+                
+                // Step 3: Click Trigger Fetch button
+                const fetchBtn = document.getElementById("trigger-fetch");
+                moveCursorTo(fetchBtn, () => {
+                  
+                  // Step 4: Click Trigger XHR button
+                  const xhrBtn = document.getElementById("trigger-xhr");
+                  moveCursorTo(xhrBtn, () => {
+                    
+                    // Step 5: Click storage population
+                    const storageBtn = document.getElementById("populate-storage");
+                    moveCursorTo(storageBtn, () => {
+                      
+                      // Complete Autopilot Scan
+                      setTimeout(() => {
+                        overlay.style.display = "none";
+                        cursor.style.display = "none";
+                        window.autopilotActive = false;
+                        alert("Autopilot scanning complete! Look at the Idely Extension popup or Options dashboard to review the captured secrets.");
+                      }, 1200);
+                      
+                    }, true);
+                    
+                  }, true);
+                  
+                }, true);
+
+              }, 1000);
+            });
+
+          }, 1000);
+        });
+      }, 500);
+    });
+  </script>
+</body>
+</html>

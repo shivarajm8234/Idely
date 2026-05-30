@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Idely - Active Scan</title>
+  <link rel="stylesheet" href="popup.css">
+  <!-- Load font -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <span class="logo-radar"></span>
+        <h1>Idely</h1>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button id="history-btn" class="header-icon-btn" title="View Scan History" style="background: transparent; border: none; font-size: 14px; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: color 0.2s;">🕐</button>
+        <button id="dashboard-btn" class="header-icon-btn" title="Open Options Dashboard" style="background: transparent; border: none; font-size: 14px; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: color 0.2s;">📊</button>
+        <div class="badge" id="severity-badge">Secure</div>
+      </div>
+    </header>
+
+    <!-- Scanner Animation -->
+    <div class="radar-container" id="radar-section">
+      <div class="radar-circle">
+        <div class="radar-sweep"></div>
+        <div class="radar-grid"></div>
+        <div class="radar-pulse"></div>
+      </div>
+      <p class="scanning-status" id="status-text">Monitoring network & scripts...</p>
+    </div>
+
+    <!-- Findings Section -->
+    <section class="findings-section">
+      <!-- Agent Inspector Terminal -->
+      <div class="agent-terminal" id="agent-terminal" style="display: none;">
+        <div class="terminal-header">
+          <span class="terminal-dot red"></span>
+          <span class="terminal-dot yellow"></span>
+          <span class="terminal-dot green"></span>
+          <span class="terminal-title">Idely Agent Inspector</span>
+        </div>
+        <div class="terminal-body" id="terminal-logs"></div>
+      </div>
+
+      <div class="section-title">
+        <span>Active Tab Findings</span>
+        <span class="count-tag" id="findings-count">0</span>
+      </div>
+      
+      <div class="findings-list" id="findings-list">
+        <!-- Rendered dynamically -->
+        <div class="empty-state">
+          <div class="shield-icon">🛡️</div>
+          <h3>No secrets exposed on this tab</h3>
+          <p>Continuous background network, dynamic script, and memory scanning is running.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer Actions -->
+    <footer class="footer">
+      <button class="btn btn-secondary" id="rescan-btn">Rescan Page</button>
+      <button class="btn btn-primary" id="autopilot-btn" style="background: linear-gradient(135deg, #7c4dff 0%, #ff1744 100%);">Agent Autopilot</button>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Idely — Scan History</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0b0f;
+      --surface: #111217;
+      --surface2: #16171e;
+      --border: rgba(255,255,255,0.06);
+      --border-accent: rgba(124,77,255,0.35);
+      --text: #e2e8f0;
+      --text-secondary: #718096;
+      --text-muted: #4a5568;
+      --purple: #7c4dff;
+      --green: #00e676;
+      --red: #ff1744;
+      --orange: #ff5722;
+      --amber: #ffb300;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Topbar ── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10,11,15,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      color: var(--text);
+    }
+    .brand-dot {
+      width: 10px; height: 10px;
+      background: var(--green);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity:1; transform:scale(1); }
+      50% { opacity:0.5; transform:scale(1.2); }
+    }
+    .topbar-title {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-left: 4px;
+    }
+    .topbar-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .btn {
+      padding: 7px 14px;
+      border-radius: 7px;
+      border: none;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { border-color: var(--border-accent); color: var(--text); }
+    .btn-danger {
+      background: rgba(255,23,68,0.12);
+      color: var(--red);
+      border: 1px solid rgba(255,23,68,0.25);
+    }
+    .btn-danger:hover { background: rgba(255,23,68,0.2); }
+
+    /* ── Layout ── */
+    .layout {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 56px);
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 230px;
+      flex-shrink: 0;
+      border-right: 1px solid var(--border);
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      overflow-y: auto;
+    }
+    .sidebar-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      padding: 4px 8px 8px;
+    }
+    .filter-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      border-radius: 7px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: left;
+      width: 100%;
+    }
+    .filter-btn:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+    .filter-btn.active { background: rgba(124,77,255,0.12); color: var(--purple); border: 1px solid var(--border-accent); }
+    .filter-badge {
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.06);
+      color: var(--text-muted);
+    }
+    .filter-btn.active .filter-badge { background: rgba(124,77,255,0.2); color: var(--purple); }
+
+    /* ── Main Content ── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Toolbar ── */
+    .toolbar {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .search-box {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 7px 12px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-box:focus { border-color: var(--border-accent); }
+    .search-box::placeholder { color: var(--text-muted); }
+    .stats-bar {
+      display: flex;
+      gap: 12px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+    .stat-item { display: flex; align-items: center; gap: 4px; }
+    .stat-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+    /* ── Records List ── */
+    .records-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .record-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .record-card::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+    }
+    .record-card.flagged::before { background: var(--red); }
+    .record-card.clean::before { background: var(--green); }
+    .record-card.empty::before { background: var(--text-muted); }
+    .record-card:hover { border-color: rgba(255,255,255,0.1); background: var(--surface2); transform: translateX(2px); }
+    .record-card.expanded { border-color: var(--border-accent); }
+
+    .record-row1 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 5px;
+    }
+    .record-status {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+    .status-flagged { background: rgba(255,23,68,0.15); color: var(--red); }
+    .status-clean { background: rgba(0,230,118,0.1); color: var(--green); }
+    .status-empty { background: rgba(255,255,255,0.04); color: var(--text-muted); }
+
+    .record-source {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: var(--font-mono);
+    }
+    .record-time { font-size: 10px; color: var(--text-muted); flex-shrink: 0; }
+
+    .record-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 10px;
+      color: var(--text-secondary);
+    }
+    .meta-item { display: flex; align-items: center; gap: 3px; }
+
+    /* ── Expanded Detail ── */
+    .record-detail {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      display: none;
+    }
+    .record-card.expanded .record-detail { display: block; }
+
+    .detail-url {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+      word-break: break-all;
+      margin-bottom: 10px;
+      padding: 6px 8px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 5px;
+    }
+
+    .findings-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .finding-item {
+      background: rgba(255,23,68,0.05);
+      border: 1px solid rgba(255,23,68,0.15);
+      border-radius: 6px;
+      padding: 8px 10px;
+    }
+    .finding-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+    .finding-type {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--red);
+    }
+    .severity-pill {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 8px;
+      text-transform: uppercase;
+    }
+    .sev-critical { background: rgba(255,23,68,0.2); color: var(--red); }
+    .sev-high { background: rgba(255,87,34,0.2); color: var(--orange); }
+    .sev-medium { background: rgba(255,179,0,0.2); color: var(--amber); }
+    .sev-low { background: rgba(0,230,118,0.15); color: var(--green); }
+
+    .finding-redacted {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-secondary);
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 4px;
+      padding: 4px 8px;
+      word-break: break-all;
+    }
+    .finding-snippet {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-secondary);
+      margin-top: 5px;
+      word-break: break-all;
+      line-height: 1.6;
+    }
+    .finding-meta-row {
+      display: flex;
+      gap: 10px;
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 5px;
+    }
+
+    /* ── Empty / Loading ── */
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--text-muted);
+      padding: 40px;
+      text-align: center;
+    }
+    .empty-icon { font-size: 48px; }
+    .empty-state h3 { font-size: 16px; font-weight: 600; color: var(--text-secondary); }
+    .empty-state p { font-size: 12px; line-height: 1.7; }
+
+    /* ── Detail Panel (right side) ── */
+    .detail-panel {
+      width: 380px;
+      flex-shrink: 0;
+      border-left: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .detail-panel-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .detail-panel-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+    }
+    .detail-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-muted);
+      font-size: 12px;
+      text-align: center;
+      gap: 8px;
+    }
+
+    .detail-field { margin-bottom: 14px; }
+    .detail-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+    .detail-value {
+      font-size: 12px;
+      color: var(--text);
+      font-family: var(--font-mono);
+      word-break: break-all;
+      line-height: 1.6;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 7px 9px;
+    }
+    .detail-value.clean { border-color: rgba(0,230,118,0.2); color: var(--green); }
+    .detail-value.flagged { border-color: rgba(255,23,68,0.2); color: #ff8099; }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+    .loading-spinner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-muted);
+      font-size: 13px;
+      gap: 10px;
+    }
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.08);
+      border-top-color: var(--purple);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <!-- ── Topbar ── -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="brand-dot"></div>
+      Idely
+    </div>
+    <span class="topbar-title">/ Scan History</span>
+    <div class="topbar-actions">
+      <div class="stats-bar" id="global-stats">
+        <div class="stat-item"><div class="stat-dot" style="background:#ff1744"></div><span id="stat-flagged">0</span> flagged</div>
+        <div class="stat-item"><div class="stat-dot" style="background:#00e676"></div><span id="stat-clean">0</span> clean</div>
+        <div class="stat-item"><div class="stat-dot" style="background:#4a5568"></div><span id="stat-total">0</span> total</div>
+      </div>
+      <button class="btn btn-ghost" id="refresh-btn">↻ Refresh</button>
+      <button class="btn btn-danger" id="clear-btn">🗑 Clear All</button>
+    </div>
+  </div>
+
+  <!-- ── Main Layout ── -->
+  <div class="layout">
+
+    <!-- ── Sidebar Filters ── -->
+    <div class="sidebar">
+      <div class="sidebar-label">Filter by Status</div>
+      <button class="filter-btn active" data-filter="all">
+        All Records <span class="filter-badge" id="count-all">0</span>
+      </button>
+      <button class="filter-btn" data-filter="flagged">
+        ⚠️ Flagged <span class="filter-badge" id="count-flagged">0</span>
+      </button>
+      <button class="filter-btn" data-filter="clean">
+        ✓ Clean <span class="filter-badge" id="count-clean">0</span>
+      </button>
+      <button class="filter-btn" data-filter="empty">
+        — Empty <span class="filter-badge" id="count-empty">0</span>
+      </button>
+
+      <div class="sidebar-label" style="margin-top:16px;">Filter by Severity</div>
+      <button class="filter-btn" data-severity="CRITICAL">
+        🔴 Critical <span class="filter-badge" id="count-critical">0</span>
+      </button>
+      <button class="filter-btn" data-severity="HIGH">
+        🟠 High <span class="filter-badge" id="count-high">0</span>
+      </button>
+      <button class="filter-btn" data-severity="MEDIUM">
+        🟡 Medium <span class="filter-badge" id="count-medium">0</span>
+      </button>
+    </div>
+
+    <!-- ── Records + Detail ── -->
+    <div class="main">
+      <div class="toolbar">
+        <input class="search-box" type="text" id="search-input" placeholder="🔍  Search by source, type, domain...">
+      </div>
+      <div style="display:flex; flex:1; overflow:hidden;">
+        <div class="records-area" id="records-area">
+          <div class="loading-spinner"><div class="spinner"></div> Loading scan records…</div>
+        </div>
+
+        <!-- ── Detail Panel ── -->
+        <div class="detail-panel" id="detail-panel">
+          <div class="detail-panel-header">
+            <span>📄 Record Details</span>
+          </div>
+          <div class="detail-panel-body" id="detail-panel-body">
+            <div class="detail-empty">
+              <span style="font-size:32px;">🔍</span>
+              <p>Click a record to<br>view full details</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="history.js"></script>
+</body>
+</html>

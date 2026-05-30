@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Idely - Dashboard & Controls</title>
+  <link rel="stylesheet" href="options.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="dashboard-wrapper">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo-shield">🛡️</div>
+        <h2>Idely Admin</h2>
+      </div>
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="history">
+          <span class="icon">📜</span> Scan History
+        </button>
+        <button class="nav-item" data-tab="whitelist">
+          <span class="icon">⚪</span> Whitelist & Ignores
+        </button>
+        <button class="nav-item" data-tab="github">
+          <span class="icon">🐙</span> GitHub Repo Scanner
+        </button>
+        <button class="nav-item" data-tab="settings">
+          <span class="icon">⚙️</span> Configuration Settings
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <p>Idely Detector v1.0.0</p>
+        <p>Secured via AES-GCM</p>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="main-header">
+        <h1 id="tab-title">Scan History</h1>
+        <div class="header-actions">
+          <button class="btn btn-secondary" id="export-json-btn">Export JSON</button>
+          <button class="btn btn-secondary" id="export-csv-btn">Export CSV</button>
+          <button class="btn btn-danger" id="clear-all-history-btn">Clear Records</button>
+        </div>
+      </header>
+
+      <!-- TAB 1: HISTORY -->
+      <section class="tab-panel active" id="panel-history">
+        <div class="filters-row">
+          <input type="text" class="input-search" id="search-history" placeholder="Search by domain, URL, or finding category...">
+          <select class="select-filter" id="filter-severity">
+            <option value="ALL">All Severities</option>
+            <option value="CRITICAL">Critical Only</option>
+            <option value="HIGH">High & Above</option>
+            <option value="MEDIUM">Medium & Above</option>
+          </select>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Domain / URL</th>
+                <th>Secret Type</th>
+                <th>Severity</th>
+                <th>Matched Value</th>
+                <th>Source</th>
+                <th>Time Detected</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-body">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 2: WHITELIST -->
+      <section class="tab-panel" id="panel-whitelist">
+        <div class="settings-grid">
+          <div class="settings-card">
+            <h3>Whitelisted Domains</h3>
+            <p class="card-desc">Idely will not search or trigger alerts on these domain patterns.</p>
+            <div class="input-row">
+              <input type="text" class="input-text" id="new-domain-input" placeholder="e.g. localhost, internal-test.net">
+              <button class="btn btn-primary" id="add-domain-btn">Add Domain</button>
+            </div>
+            <ul class="tag-list" id="whitelisted-domains-list">
+              <!-- Rendered dynamically -->
+            </ul>
+          </div>
+
+          <div class="settings-card">
+            <h3>Ignored Secret Signatures</h3>
+            <p class="card-desc">Specific secret signatures you have explicitly whitelisted (e.g. mock keys, dummy credentials).</p>
+            <ul class="ignored-list" id="ignored-secrets-list">
+              <!-- Rendered dynamically -->
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: GITHUB REPO SCANNER -->
+      <section class="tab-panel" id="panel-github">
+        <div class="github-scanner-card">
+          <h3>Target Repository Scan</h3>
+          <p class="card-desc">Audit a public or authorized private repository's commit history for credential leaks.</p>
+          
+          <div class="github-form">
+            <div class="form-group">
+              <label for="github-repo-url">Repository URL</label>
+              <input type="text" class="input-text" id="github-repo-url" placeholder="https://github.com/owner/repo">
+            </div>
+            <div class="form-group">
+              <label for="github-token">Personal Access Token (Required for Private Repositories)</label>
+              <input type="password" class="input-text" id="github-token" placeholder="ghp_...">
+            </div>
+            <div class="form-group">
+              <label for="github-branch">Branch</label>
+              <input type="text" class="input-text" id="github-branch" value="main" placeholder="main">
+            </div>
+            <button class="btn btn-primary" id="run-github-scan-btn">Begin History Scan</button>
+          </div>
+        </div>
+
+        <div class="github-results-card">
+          <h3>Repository Scan Findings</h3>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Target File</th>
+                  <th>Commit Message</th>
+                  <th>Author</th>
+                  <th>Finding Type</th>
+                  <th>Severity</th>
+                </tr>
+              </thead>
+              <tbody id="github-results-body">
+                <tr>
+                  <td colspan="5" class="empty-table-cell">No repository scans conducted yet. Run a scan above to audit logs.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: CONFIGURATION SETTINGS -->
+      <section class="tab-panel" id="panel-settings">
+        <div class="settings-card">
+          <h3>Extension Config</h3>
+          <div class="checkbox-row">
+            <input type="checkbox" id="setting-dev-mode">
+            <label for="setting-dev-mode">
+              <strong>Developer Mode:</strong> Enables verbose console logging and allows bypass of certain validation triggers.
+            </label>
+          </div>
+          <div class="checkbox-row" style="margin-top: 15px;">
+            <input type="checkbox" id="setting-notify-sound" checked>
+            <label for="setting-notify-sound">
+              <strong>Audio Warnings:</strong> Trigger a low notification chime when a CRITICAL threat is identified.
+            </label>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="scanner.js"></script>
+  <script src="crypto.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
