@@ -135,6 +135,8 @@ async function saveScanLog(finding, tabUrl, domain) {
 
 // Send system notification
 function showSystemNotification(finding, domain) {
+  // Notifications are disabled per user request
+  return;
   chrome.notifications.create({
     type: "basic",
     iconUrl: "icons/icon128.png",
