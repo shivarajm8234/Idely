@@ -112,63 +112,123 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px 0;
-  background: linear-gradient(180deg, rgba(124, 77, 255, 0.05) 0%, rgba(0, 0, 0, 0) 100%);
+  padding: 24px 0;
+  background-color: #030a03;
+  background-image: 
+    linear-gradient(rgba(0, 255, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 0, 0.05) 1px, transparent 1px);
+  background-size: 15px 15px;
   border-bottom: 1px solid var(--border-color);
 }
 
 .radar-circle {
-  width: 90px;
-  height: 90px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
-  border: 1px dashed rgba(124, 77, 255, 0.2);
+  border: 4px solid #00ff00;
   position: relative;
   overflow: hidden;
-  background: rgba(124, 77, 255, 0.02);
-  margin-bottom: 12px;
+  background: #000;
+  box-shadow: 0 0 10px #00ff00, inset 0 0 25px rgba(0, 255, 0, 0.4);
+  margin-bottom: 18px;
+}
+
+/* Inner tick marks ring */
+.radar-circle::after {
+  content: '';
+  position: absolute;
+  top: 6px; left: 6px; right: 6px; bottom: 6px;
+  border-radius: 50%;
+  border: 1px dashed rgba(0, 255, 0, 0.6);
+  z-index: 1;
+}
+
+/* Concentric rings */
+.radar-circle::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 255, 0, 0.4);
+  box-shadow: 
+    inset 0 0 0 16px transparent,
+    inset 0 0 0 17px rgba(0, 255, 0, 0.4),
+    inset 0 0 0 33px transparent,
+    inset 0 0 0 34px rgba(0, 255, 0, 0.4);
+  z-index: 1;
 }
 
 .radar-sweep {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 100%;
-  height: 100%;
-  background: conic-gradient(from 0deg, transparent 50%, var(--accent-purple-glow) 100%);
-  transform-origin: 0 0;
-  animation: sweep 4s infinite linear;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: conic-gradient(from 0deg, transparent 65%, rgba(255, 0, 0, 0.2) 85%, rgba(255, 0, 0, 0.9) 100%);
+  border-radius: 50%;
+  animation: sweep-center 2s infinite linear;
+  z-index: 3;
 }
 
-.radar-grid {
+.radar-crosshairs {
   position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: rgba(124, 77, 255, 0.1);
+  top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 2;
 }
-
-.radar-grid::after {
+.radar-crosshairs::before, .radar-crosshairs::after {
   content: '';
   position: absolute;
-  top: -45px;
-  left: 50%;
-  width: 1px;
-  height: 90px;
-  background: rgba(124, 77, 255, 0.1);
+  background: rgba(0, 255, 0, 0.5);
+}
+.radar-crosshairs::before {
+  top: 50%; left: 0; width: 100%; height: 1px;
+  transform: translateY(-50%);
+}
+.radar-crosshairs::after {
+  top: 0; left: 50%; width: 1px; height: 100%;
+  transform: translateX(-50%);
+}
+
+.radar-diagonals {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 2;
+  transform: rotate(45deg);
+}
+.radar-diagonals::before {
+  content: ''; position: absolute;
+  top: 50%; left: 0; width: 100%; height: 1px;
+  background: rgba(0, 255, 0, 0.25);
+  transform: translateY(-50%);
+}
+.radar-diagonals::after {
+  content: ''; position: absolute;
+  top: 0; left: 50%; width: 1px; height: 100%;
+  background: rgba(0, 255, 0, 0.25);
+  transform: translateX(-50%);
 }
 
 .radar-pulse {
   position: absolute;
-  top: 40%;
-  left: 30%;
+  top: 35%;
+  left: 60%;
   width: 6px;
   height: 6px;
-  background: var(--color-critical);
+  background: #ff0000;
   border-radius: 50%;
-  box-shadow: 0 0 6px var(--color-critical);
-  animation: pulse-node 1.5s infinite alternate;
+  box-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000;
+  animation: pulse-node 1.2s infinite alternate;
   display: none; /* Only show when findings exist */
+  z-index: 4;
+}
+
+.radar-pulse::after {
+  content: '';
+  position: absolute;
+  top: -6px; left: -6px; right: -6px; bottom: -6px;
+  border-radius: 50%;
+  border: 1px solid #ff0000;
+  animation: pulse-ring 1.5s infinite ease-out;
 }
 
 .scanning-status {
@@ -340,9 +400,9 @@ body {
 }
 
 /* Animations */
-@keyframes sweep {
-  0% { transform: translate(-50%, -50%) rotate(0deg); }
-  100% { transform: translate(-50%, -50%) rotate(360deg); }
+@keyframes sweep-center {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 @keyframes pulse {
@@ -351,8 +411,13 @@ body {
 }
 
 @keyframes pulse-node {
-  0% { transform: scale(0.9); opacity: 0.4; }
-  100% { transform: scale(1.4); opacity: 1; }
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(1.3); opacity: 1; }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.5); opacity: 1; }
+  100% { transform: scale(2.5); opacity: 0; }
 }
 
 /* Agent Inspector Terminal Styles */
