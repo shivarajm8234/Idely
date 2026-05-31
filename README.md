@@ -14,6 +14,12 @@ With a focus on proactive security and zero-trust execution, Idely automatically
 - **GitHub Repository Scanner**: Audit any public or authorized private GitHub repository's commit history directly from the extension to catch historical secret leaks.
 - **Data Export & Whitelisting**: Export your findings as JSON or CSV, and whitelist internal domains or ignore specific mock-secrets to reduce noise.
 
+## 📸 Screenshots
+
+![Dashboard](.resources/image.png)
+![Scanning Details](.resources/image%20copy.png)
+![History](.resources/image%20copy%202.png)
+
 ## 🛠️ Architecture
 
 - `manifest.json`: Manifest V3 compliant extension architecture.
